@@ -1,5 +1,6 @@
 import {
   ACTION_TIME,
+  CALLOUT_TIME,
   DROP_TIME,
   LIVES,
   PLAYER_GRAVITY,
@@ -10,6 +11,7 @@ import {
   SACK_GRAVITY,
   SACK_RADIUS,
   SCORE_BACK_KICK,
+  SCORE_COMBO_BONUS,
   SCORE_HEADER,
   SCORE_KICK,
   SCORE_POPUP_TIME,
@@ -27,7 +29,7 @@ import {
   PLAYER_START_X,
   SACK_START_OFFSET,
 } from "./layout";
-import type { GameState, HitKind, InputFrame, Pose } from "./types";
+import type { GameState, GameStats, HitKind, InputFrame, Pose } from "./types";
 
 export function createGame(): GameState {
   return {
@@ -37,8 +39,9 @@ export function createGame(): GameState {
     elapsed: 0,
     player: createPlayer(),
     sack: createSack(PLAYER_START_X),
-    stats: { score: 0, hits: 0, streak: 0, startedAt: 0 },
+    stats: createStats(0),
     popups: [],
+    callouts: [],
     nextId: 1,
     events: [],
   };
@@ -68,13 +71,18 @@ function createSack(playerX: number) {
   };
 }
 
+function createStats(startedAt: number): GameStats {
+  return { score: 0, hits: 0, streak: 0, comboHits: [], startedAt };
+}
+
 function startRun(state: GameState) {
   state.lives = LIVES;
   state.elapsed = 0;
   state.player = createPlayer();
   state.sack = createSack(state.player.x);
-  state.stats = { score: 0, hits: 0, streak: 0, startedAt: Date.now() };
+  state.stats = createStats(Date.now());
   state.popups = [];
+  state.callouts = [];
   state.phase = "ready";
   state.phaseTimer = READY_TIME;
   state.events.push({ type: "start" });
@@ -84,12 +92,14 @@ function resetAfterDrop(state: GameState) {
   state.player = { ...createPlayer(), x: state.player.x };
   state.sack = createSack(state.player.x);
   state.stats.streak = 0;
+  state.stats.comboHits = [];
   state.phase = "ready";
   state.phaseTimer = READY_TIME;
 }
 
 export function step(state: GameState, dt: number, input: InputFrame) {
   updatePopups(state, dt);
+  updateCallouts(state, dt);
 
   switch (state.phase) {
     case "attract":
@@ -118,9 +128,11 @@ export function step(state: GameState, dt: number, input: InputFrame) {
       if (state.sack.y + SACK_RADIUS >= GROUND_Y) {
         state.lives -= 1;
         state.stats.streak = 0;
+        state.stats.comboHits = [];
         state.phase = "dropped";
         state.phaseTimer = DROP_TIME;
         state.events.push({ type: "drop" }, { type: "life-lost" });
+        addCallout(state, "DEAD SACK");
       }
       break;
 
@@ -285,11 +297,17 @@ function scoreHit(state: GameState, kind: HitKind) {
 
   state.stats.hits += 1;
   state.stats.streak += 1;
-  const bonus =
+  const streakBonus =
     state.stats.streak % STREAK_INTERVAL === 0 ? SCORE_STREAK_BONUS : 0;
+  const scoredCombo = updateCombo(state, kind);
+  const comboBonus = scoredCombo ? SCORE_COMBO_BONUS : 0;
+  const bonus = streakBonus + comboBonus;
   const score = base + bonus;
   state.stats.score += score;
   state.events.push({ type: "hit", kind, score: base, bonus });
+  if (state.stats.streak === 30) addCallout(state, "Hackfinity");
+  if (state.stats.streak === 50) addCallout(state, "HACKSTURBATOR");
+  if (scoredCombo) addCallout(state, "SACK ON!");
   state.popups.push({
     id: state.nextId++,
     x: state.sack.x,
@@ -297,6 +315,36 @@ function scoreHit(state: GameState, kind: HitKind) {
     text: bonus ? `+${base}+${bonus}` : `+${base}`,
     timer: SCORE_POPUP_TIME,
   });
+}
+
+function addCallout(state: GameState, text: string) {
+  state.callouts.push({
+    id: state.nextId++,
+    text,
+    timer: CALLOUT_TIME,
+    duration: CALLOUT_TIME,
+  });
+  state.events.push({ type: "callout", text });
+}
+
+function updateCombo(state: GameState, kind: HitKind) {
+  if (state.stats.comboHits.includes(kind)) {
+    state.stats.comboHits = [kind];
+    return false;
+  }
+
+  state.stats.comboHits = [...state.stats.comboHits, kind];
+  if (state.stats.comboHits.length < 3) return false;
+
+  state.stats.comboHits = [];
+  return true;
+}
+
+function updateCallouts(state: GameState, dt: number) {
+  for (const callout of state.callouts) {
+    callout.timer -= dt;
+  }
+  state.callouts = state.callouts.filter((callout) => callout.timer > 0);
 }
 
 function updatePopups(state: GameState, dt: number) {

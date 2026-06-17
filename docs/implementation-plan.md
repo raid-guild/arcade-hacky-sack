@@ -105,9 +105,10 @@ Match Brood Tapper's start screen pattern, reskinned:
 - Primary action: `CLICK TO START` or `INSERT SACK`
 - Score guide:
   - Kick: `100`
-  - Header: `150`
+  - Header: `50`
   - Backward kick: `175`
   - 10-hit streak bonus: `+50`
+  - Kick/header/reverse combo bonus: `+10`
 - Controls:
   - `←/→`: move
   - `↑`: jump/header
@@ -207,9 +208,10 @@ Constants:
 
 ```ts
 export const SCORE_KICK = 100;
-export const SCORE_HEADER = 150;
+export const SCORE_HEADER = 50;
 export const SCORE_BACK_KICK = 175;
 export const SCORE_STREAK_BONUS = 50;
+export const SCORE_COMBO_BONUS = 10;
 export const STREAK_INTERVAL = 10;
 ```
 
@@ -219,6 +221,8 @@ On every valid hit:
 - Increment `streak`.
 - Add base score for hit type.
 - If `streak % 10 === 0`, add `50`.
+- If kick, header, and reverse are hit in a row in any order without repeating
+  a hit type, add `10` and reset combo progress.
 - Emit score popup event, sound event, and optional HUD flash.
 
 Stats to store:

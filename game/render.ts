@@ -58,6 +58,7 @@ export function render(
   drawPopups(ctx, state, opts);
   drawHud(ctx, state, opts);
   drawOverlay(ctx, state, opts);
+  drawCallouts(ctx, state, opts);
 }
 
 function drawBackground(ctx: CanvasRenderingContext2D, image: HTMLImageElement | null) {
@@ -186,6 +187,46 @@ function drawPopups(ctx: CanvasRenderingContext2D, state: GameState, opts: Rende
   ctx.globalAlpha = 1;
 }
 
+function drawCallouts(
+  ctx: CanvasRenderingContext2D,
+  state: GameState,
+  opts: RenderOpts
+) {
+  const callout = state.callouts.at(-1);
+  if (!callout) return;
+
+  const elapsed = callout.duration - callout.timer;
+  const progress = Math.max(0, Math.min(1, elapsed / callout.duration));
+  const intro = Math.min(1, progress / 0.22);
+  const exit = Math.max(0, (progress - 0.64) / 0.36);
+  const scale = 0.26 + easeOutBack(intro) * 0.98 - exit * 0.16;
+  const alpha = Math.max(0, 1 - exit);
+  const maxWidth = LOGICAL_W - 30;
+  let fontSize = 28;
+
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  while (fontSize > 12) {
+    ctx.font = `${fontSize}px ${opts.font}`;
+    if (ctx.measureText(callout.text).width * scale <= maxWidth) break;
+    fontSize -= 2;
+  }
+
+  ctx.translate(LOGICAL_W / 2, HUD_Y * 0.42);
+  ctx.scale(scale, scale);
+  ctx.globalAlpha = alpha;
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#26070b";
+  ctx.strokeText(callout.text, 0, 0);
+  ctx.fillStyle = PAL.score;
+  ctx.fillText(callout.text, 0, 0);
+  ctx.globalAlpha = Math.max(0, alpha * (1 - progress));
+  ctx.fillStyle = PAL.white;
+  ctx.fillText(callout.text, 0, -2);
+  ctx.restore();
+}
+
 function drawHud(ctx: CanvasRenderingContext2D, state: GameState, opts: RenderOpts) {
   ctx.fillStyle = PAL.hud;
   ctx.fillRect(0, HUD_Y, LOGICAL_W, HUD_H);
@@ -215,4 +256,10 @@ function drawOverlay(ctx: CanvasRenderingContext2D, state: GameState, opts: Rend
   ctx.fillText(overlay[0], LOGICAL_W / 2, 78);
   ctx.font = `8px ${opts.font}`;
   ctx.fillText(overlay[1], LOGICAL_W / 2, 98);
+}
+
+function easeOutBack(value: number) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(value - 1, 3) + c1 * Math.pow(value - 1, 2);
 }

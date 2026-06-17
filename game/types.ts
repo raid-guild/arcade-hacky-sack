@@ -41,10 +41,18 @@ export interface ScorePopup {
   timer: number;
 }
 
+export interface Callout {
+  id: number;
+  text: string;
+  timer: number;
+  duration: number;
+}
+
 export interface GameStats {
   score: number;
   hits: number;
   streak: number;
+  comboHits: HitKind[];
   startedAt: number;
 }
 
@@ -57,6 +65,7 @@ export interface GameState {
   sack: Sack;
   stats: GameStats;
   popups: ScorePopup[];
+  callouts: Callout[];
   nextId: number;
   events: GameEvent[];
 }
@@ -64,6 +73,7 @@ export interface GameState {
 export type GameEvent =
   | { type: "start" }
   | { type: "hit"; kind: HitKind; score: number; bonus: number }
+  | { type: "callout"; text: string }
   | { type: "wall-bounce" }
   | { type: "drop" }
   | { type: "life-lost" }

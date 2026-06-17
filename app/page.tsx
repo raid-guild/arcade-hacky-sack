@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   SCORE_BACK_KICK,
+  SCORE_COMBO_BONUS,
   SCORE_HEADER,
   SCORE_KICK,
   SCORE_STREAK_BONUS,
@@ -44,6 +45,9 @@ export default async function StartScreen() {
             <span>
               {STREAK_INTERVAL} HIT STREAK +{SCORE_STREAK_BONUS}
             </span>
+          </div>
+          <div className="score-guide__item">
+            <span>3 TRICK COMBO +{SCORE_COMBO_BONUS}</span>
           </div>
         </div>
         <p className="subtitle">CONTROLS</p>

@@ -18,10 +18,26 @@ export class Sfx {
         this.beep(freq, event.bonus ? 0.12 : 0.08, "square");
         if (event.bonus) this.beep(760, 0.11, "triangle", 0.05);
       }
+      if (event.type === "callout") {
+        this.callout(event.text);
+      }
       if (event.type === "wall-bounce") this.beep(230, 0.04, "square");
       if (event.type === "drop") this.beep(130, 0.18, "sawtooth");
       if (event.type === "start") this.beep(360, 0.08, "triangle");
     }
+  }
+
+  private callout(text: string) {
+    if (text === "DEAD SACK") {
+      this.beep(190, 0.09, "sawtooth");
+      this.beep(92, 0.18, "sawtooth", 0.08);
+      return;
+    }
+
+    const lift = text === "SACK ON!" ? 0 : 80;
+    this.beep(520 + lift, 0.08, "square");
+    this.beep(720 + lift, 0.09, "triangle", 0.05);
+    this.beep(960 + lift, 0.12, "square", 0.11);
   }
 
   private beep(

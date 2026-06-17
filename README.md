@@ -14,8 +14,9 @@ score table for Hack Thy Sack runs.
 - `Space` — kick
 - click/tap — start and basic kick
 
-Keep the red hack sack in the air. Kicks, headers, backward kicks, and every
-10-hit streak add to the total score. You get 3 lives.
+Keep the red hack sack in the air. Kicks, headers, backward kicks, every
+10-hit streak, and kick/header/reverse combos add to the total score. You get 3
+lives.
 
 ## Development
 
