@@ -1,0 +1,17 @@
+{
+  "cell": {
+    "w": 56,
+    "h": 72
+  },
+  "names": [
+    "front-idle",
+    "front-kick",
+    "side-idle",
+    "side-spin",
+    "back-idle",
+    "back-kick",
+    "jump-header"
+  ],
+  "source": "assets-src/ranger/generated-pose-sheet-v1-alpha.png",
+  "review": "Manual art review required before launch."
+}

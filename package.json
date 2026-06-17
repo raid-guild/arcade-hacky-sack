@@ -1,0 +1,37 @@
+{
+  "name": "hack-thy-sack",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "postbuild": "mkdir -p .next/standalone/.next && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
+    "start": "next start",
+    "lint": "next lint",
+    "assets": "node assets-src/build-bg.mjs && node assets-src/build-ranger-sprites.mjs && node assets-src/build-sack-sprites.mjs",
+    "sprites": "npm run assets",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "drizzle-kit": "^0.30.6",
+    "drizzle-orm": "^0.38.0",
+    "iron-session": "^8.0.4",
+    "jose": "^5.9.6",
+    "next": "^15.1.0",
+    "postgres": "^3.4.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "playwright-core": "^1.60.0",
+    "sharp": "^0.33.5",
+    "typescript": "^5.7.0"
+  }
+}
